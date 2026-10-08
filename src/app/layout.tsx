@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "FlowPay | Merchant payments dashboard",
-  description: "FlowPay demo merchant payments dashboard. Your workspace is ready.",
+  description: "Fictional merchant payments dashboard with transaction insights and browser-saved invoices.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

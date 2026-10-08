@@ -19,9 +19,16 @@ const paid: Invoice[] = transactions.slice(0, 3).map((t, i) => ({
 }));
 export const fixtures: DashboardData = {
   transactions,
-  invoices: [...paid,
+  invoices: ([...paid,
     { id: 'inv_0004', customer: 'Bisi Adeyemi', amountKobo: 6500000, currency: 'NGN', status: 'unpaid', dueAt: '2026-10-15T23:59:59+01:00' },
     { id: 'inv_0005', customer: 'Amina Musa', amountKobo: 4250000, currency: 'NGN', status: 'overdue', dueAt: '2026-09-28T23:59:59+01:00' },
     { id: 'inv_0006', customer: 'Femi Afolabi', amountKobo: 9800000, currency: 'NGN', status: 'overdue', dueAt: '2026-08-30T23:59:59+01:00' },
-  ],
+  ] as Invoice[]).map((invoice, i) => ({
+    ...invoice,
+    number: `INV-${String(i + 1).padStart(4, "0")}`,
+    email: `customer${i + 1}@example.com`,
+    items: [{ description: "Sample merchandise order", quantity: 1, unitPriceKobo: invoice.amountKobo }],
+    notes: "Fictional sample invoice. No payment is requested.",
+    createdAt: "2026-07-11T09:00:00+01:00",
+  })),
 };
