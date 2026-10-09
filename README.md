@@ -4,7 +4,7 @@ A portfolio demo of a Nigerian merchant payments dashboard for **Olive & Stitch*
 
 **Demo environment:** all financial and customer data is fictional. There are no real payments, credentials, authentication, external databases or money movement. Use fictional details when creating invoices.
 
-[Source on GitHub](https://github.com/Peter-Aderinto/flowpay)
+**[Open the live demo](https://flowpay-swart.vercel.app)** · [Source on GitHub](https://github.com/Peter-Aderinto/flowpay)
 
 ## Screenshots
 
@@ -96,7 +96,7 @@ The release was checked in Chromium against the local production build: direct r
 
 This is an ordinary Next.js project suitable for Vercel's Next.js preset with repository root `.` and Node.js **24.x**. Use `npm ci` for installation and `npm run build` for the build; retain the default output directory. No payment secrets, database provisioning or paid services are required.
 
-Connecting `Peter-Aderinto/flowpay` through Vercel's GitHub integration allows pushes to `main` to trigger production deployments once the integration is authorized. A public production URL and integration status should be confirmed after deployment; no unverified URL is listed here.
+Deployed to **https://flowpay-swart.vercel.app** in the account's Hobby workspace. Vercel's GitHub integration is connected to `Peter-Aderinto/flowpay`; pushes to `main` trigger production deployments. The initial release was deployed successfully from a GitHub push, and the production domain was checked without Vercel login cookies or bypass headers. Live Chromium checks passed for `/`, `/dashboard`, `/transactions`, and `/invoices`, including direct visits/refreshes, transaction filters, automatic seeds, invoice creation/reload persistence, and seeded/new PDF downloads. No console or page errors were observed during those checks.
 
 ## Limitations and dependency review
 

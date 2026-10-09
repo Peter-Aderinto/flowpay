@@ -20,6 +20,8 @@ The affected `braces` range is `<=3.0.3`. The advisory lists no patched release;
 
 `npm audit --omit=dev --json` reports **zero vulnerabilities** in the production dependency set, including the browser PDF library. This is the result of this audit, not a guarantee that the application has no security defects.
 
+The Vercel build also emits an end-of-support warning for ESLint 9.39.5. This is a separate tooling-maintenance concern, not an additional npm audit advisory. A future supported-major upgrade should be checked against the Next ESLint configuration and plugins and verified with lint/typecheck/tests; it does not itself establish a fix for the unresolved `braces` advisory.
+
 ## Practical exposure and follow-up
 
 The affected chain belongs to ESLint development tooling. It is installed on developer machines and during builds that install development dependencies. A malicious deeply nested glob supplied to affected tooling can interrupt linting or CI. Development-only classification does not make that risk irrelevant.
