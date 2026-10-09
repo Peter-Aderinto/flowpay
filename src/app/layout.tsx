@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FlowPay | Merchant payments dashboard",
-  description: "Fictional merchant payments dashboard with transaction insights and browser-saved invoices.",
+  title: { default: "FlowPay | Merchant payments dashboard", template: "%s | FlowPay" },
+  description: "Explore a fictional Nigerian merchant dashboard with payment insights, searchable transactions, browser-saved invoices, and downloadable PDFs.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

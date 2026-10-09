@@ -1,62 +1,74 @@
-# FlowPay — Phase 3
+# FlowPay
 
-A portfolio demonstration of a Nigerian merchant payments dashboard for the fictional **Olive & Stitch** business. All sample financial data is fictional. There is no real payment provider, authentication, external database, or money movement. Enter fictional customer details only.
+A portfolio demo of a Nigerian merchant payments dashboard for **Olive & Stitch**, a fictional business. Explore payment reporting, transaction search and invoice workflows in a responsive interface built with Next.js and TypeScript.
 
-## Run in WSL Ubuntu
+**Demo environment:** all financial and customer data is fictional. There are no real payments, credentials, authentication, external databases or money movement. Use fictional details when creating invoices.
 
-Requires Node.js **20.9 or newer**. The existing Next.js 16.4 / React 19.3 framework versions and Webpack configuration are retained.
+[Source on GitHub](https://github.com/Peter-Aderinto/flowpay)
+
+## Screenshots
+
+Captured from the actual application running a local production build, with the original seeded dataset.
+
+![FlowPay desktop overview](docs/screenshots/overview-desktop.png)
+
+<img src="docs/screenshots/overview-mobile.png" alt="FlowPay overview on a 375-pixel mobile viewport" width="375" />
+
+## Features
+
+- **Overview:** 7-, 30- and 90-day reporting, successful collections, pending payments, all-time outstanding invoices, a keyboard-accessible collection chart with an exact data table, and recent transactions.
+- **Transactions:** customer/email/reference search, status and payment-method filters, inclusive Lagos date ranges, date/amount sorting, and pagination. URL parameters retain filters on refresh and browser Back/Forward. Details include copy-reference feedback and linked invoice previews.
+- **Invoices:** search, paid/unpaid/overdue filters, previews and validated multi-item invoice creation with optional notes. Created invoices survive reloads in the visitor's browser.
+- **PDF invoices:** browser-generated A4 downloads with selectable text, embedded naira-capable typography, wrapped descriptions and notes, repeated table headings across pages, exact totals and the current demo status. PDF code and font load on demand. Downloading never marks an invoice paid.
+- **Interaction states:** loading, empty, error/retry and storage-recovery notices. Demo controls simulate empty and one-shot error responses without erasing saved data; a confirmed reset restores the seed dataset.
+- **Responsive layouts:** desktop tables and mobile records, labelled forms, visible keyboard focus, modal focus containment/restoration, and reduced-motion support.
+
+## Stack and local setup
+
+Next.js **16.4** App Router, React **19.3**, strict TypeScript, Tailwind CSS **4**, ESLint **9**, Lucide icons and jsPDF. npm and `package-lock.json` provide reproducible dependency installation. The PDF's locally hosted DejaVu Sans font includes its [redistribution notice](public/fonts/LICENSE-DejaVu.txt).
+
+Use **Node.js 24.x**, matching the declared package engine and intended Vercel runtime.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000**; `/` redirects to `/dashboard`. If a preview is already running, source edits refresh automatically. Verification uses a separate build directory and port so it does not replace the preview's `.next` output.
+Open **http://localhost:3000**. `/` redirects to `/dashboard`; `/transactions` and `/invoices` also support direct visits. No environment variables or service credentials are required.
 
-## Implemented workflows
+To run a normal production build locally:
 
-- **Overview:** 7/30/90-day reporting, four derived metrics, successful collection trend, accessible chart points with hover/focus values and arrow-key navigation, exact chart-data table, and five recent payments. Total collected uses a deep emerald card. No invented percentage changes or balances.
-- **Transactions:** search by customer/email/reference; status, card/bank-transfer and inclusive Lagos date filters; date/amount ordering; service-side filtering and sorting before 10-row pagination; results count; Clear filters. The `q`, `status`, `method`, `from`, `to`, `sort`, and `page` URL parameters restore on refresh and browser Back/Forward. Invalid values are ignored safely; page numbers are clamped to available results. Filter and sort changes reset pagination.
-- **Transaction details:** native modal dialog showing amount, reference, customer/email, status, method, timestamp, and linked invoice preview. Copy reference reports success or failure. Escape/close dismiss the modal, focus stays inside it, and focus returns to the opening control.
-- **Invoices:** search by invoice/customer/email, paid/unpaid/overdue filter, previews, and creation with customer details, due date, line items and notes. Add/remove items while keeping at least one. Prices are parsed from decimal strings to integer kobo; quantities must be positive safe integers. Negative/zero prices, excess decimal places, invalid fields and unsafe line/invoice/reporting totals are rejected. Submission is guarded against double clicks; cancelling a pending form aborts the write.
-- **Responsive interface:** semantic desktop tables, mobile record cards, labelled inputs, field-level validation, visible keyboard focus, compact navigation, tabular monetary numerals, and reduced-motion support.
+```bash
+npm run build
+npm start
+```
 
-## Fixed sample date and financial rules
+## Architecture and mock service
 
-The demo is frozen at **8 October 2026, end of day in Africa/Lagos (UTC+01:00)**. Sixty seeded transactions cover **11 July–8 October 2026 inclusive**, with unique references, fictional customer names, example.com emails, explicit timestamp timezones, integer kobo amounts and NGN currency.
+The UI calls typed services in `src/lib/mock-api.ts`. These are **simulated asynchronous responses using promises and a short delay, not real HTTP payment requests**. The service filters and sorts before pagination and supports cancellation. Request keys and abort cleanup keep stale responses from replacing newer selections. UI components do not import fixtures directly.
 
-Collected totals and the chart include **successful** transactions only. Pending totals include only pending transactions; failed transactions are excluded from both. Recent transactions include all statuses within the selected period. Outstanding invoices include every unpaid or overdue invoice **across all time**, independent of the reporting window. Six seeded invoices contain three paid examples, one unpaid and two overdue; each paid invoice has exactly one linked full successful payment. There are no refunds, partial payments, tax, discounts or simulated invoice payments.
+`src/lib/repository.ts` owns a shared, versioned browser dataset at localStorage key **`flowpay.demo.v1`**. First-time visitors automatically receive **60 transactions and six invoices**. Valid saved datasets are preserved. Invalid or incompatible data is replaced with the original seeds and a recovery notice. If storage is blocked or full, the session continues in memory with a warning that changes may be lost on reload. Subscribers and storage events refresh relevant views after changes.
 
-New invoices are stored as unpaid. Their displayed overdue status is derived from the fixed demo date, not the computer's current date. A due date of 8 October remains unpaid through that day's end; earlier dates appear overdue. Invoice totals are calculated from validated line items and are reflected in the dashboard after creation or reset.
+**Created invoices remain in the visitor's browser/profile and origin.** They are not uploaded to GitHub or a server. Invoices created on localhost will not automatically appear on a deployed domain; browser storage is origin-specific. Clearing site data or confirming Reset demo data removes created invoices. Different visitors receive their own independent dataset.
 
-## Mock API and browser persistence
+| Location | Responsibility |
+| --- | --- |
+| `src/app/(merchant)` | Route metadata and shared dashboard layout |
+| `src/components` | Dashboard, filters, dialogs, forms, previews and request states |
+| `src/lib/types.ts`, `fixtures.ts`, `demo.ts` | Typed data, deterministic seeds and demo clock |
+| `src/lib/analytics.ts`, `transaction-query.ts` | Reporting, query parsing, sorting and pagination |
+| `src/lib/money.ts`, `invoices.ts`, `format.ts` | Integer-kobo validation, statuses and NGN/Lagos formatting |
+| `src/lib/repository.ts`, `mock-api.ts` | Browser persistence and asynchronous mock services |
+| `src/lib/invoice-pdf.ts` | On-demand, selectable-text PDF generation |
+| `tests` | Financial rules, validation, persistence, query and PDF tests |
 
-`src/lib/mock-api.ts` provides typed promise-based requests with a short delay and AbortSignal support. **It does not make HTTP requests.** UI components never import fixtures. The service queries the shared repository, including filtering/sorting before pagination. Request keys and abort cleanup stop old responses overwriting new selections.
+## Financial rules and fixed demo date
 
-`src/lib/repository.ts` stores the full demo dataset under the versioned localStorage key **`flowpay.demo.v1`** with a `{ version: 1, data }` envelope. Fixtures are seeded only when no valid stored dataset exists. The decoder validates shapes, integer amounts, item totals, unique identifiers and paid-invoice links. Malformed or incompatible data is replaced with the original sample data and a recovery notice. Unavailable/full storage falls back to memory, keeps the current session working, and displays a warning that changes may be lost on reload. Storage access starts after hydration; initial server/client rendering uses the same loading state.
+The interface is frozen at **8 October 2026, end of day in Africa/Lagos (UTC+01:00)**. The date is displayed on the pages; it does not advance with the visitor's clock. Seeded transactions cover **11 July–8 October 2026**.
 
-Created invoices are saved **only in this browser/profile**, not to GitHub or a server. Repository subscribers refresh relevant views after writes, and storage events refresh open views when another tab changes the dataset. Simultaneous writes from multiple tabs are not a database transaction; this is a single-browser portfolio demo, not a production financial system.
+Amounts are stored and calculated as **integer kobo**, then formatted as NGN. Successful transactions alone contribute to collected totals and charts; pending totals exclude successful and failed payments. Outstanding invoices include all unpaid and overdue invoices regardless of the selected reporting window.
 
-## Exercise request states and reset
-
-Expand **Demo controls** below any main page:
-
-- **Normal:** return the saved demo dataset.
-- **Empty:** return an empty view without deleting anything saved.
-- **Error (once):** fail the next request once; **Retry** then recovers. Switch away and back to Error to repeat it.
-- **Reset demo data:** confirm to remove browser-created invoices and restore the original sample dataset. Cancel leaves the saved data intact.
-
-All requests are deterministic; there are no random failures. Lists distinguish an empty dataset from no matching filters. Dashboard and lists include loading and error/retry states. A persistence warning appears when browser storage fails.
-
-## Structure
-
-- `src/lib/types.ts`, `fixtures.ts`, `demo.ts`: types and seed dataset.
-- `src/lib/analytics.ts`, `transaction-query.ts`: reporting and URL/query logic.
-- `src/lib/money.ts`, `invoices.ts`: exact kobo parsing, totals, dates and invoice validation.
-- `src/lib/repository.ts`, `mock-api.ts`: persistence, notifications and asynchronous services.
-- `src/lib/format.ts`: centralized Intl NGN and Lagos date/time formatting.
-- `src/components`: shared shell, native dialog, request states, demo controls and workflow components.
-- `src/app/(merchant)`: shared layout and the three routes.
+New invoices are stored as unpaid. An unpaid invoice with a due date before 8 October appears overdue; one due on 8 October remains unpaid through that day's end. Paid seed invoices have linked full successful sample payments. PDF and preview status use the same rules. Missing issue dates, addresses, tax details or payment instructions are not invented.
 
 ## Verification
 
@@ -64,15 +76,30 @@ All requests are deterministic; there are no random failures. Lists distinguish 
 npm run lint
 npm run typecheck
 npm test
-FLOWPAY_DIST_DIR=.next-verify npm run build
+npm run build
 ```
 
-The optional `FLOWPAY_DIST_DIR` preserves running development output; normal builds use `npm run build` followed by `npm start`. To inspect the isolated build independently:
+The automated suite covers collection/status rules, Lagos boundaries, query parsing and combined filters, sorting/pagination, exact monetary calculations, invoice validation, dataset integrity, persistence/recovery, unavailable storage, cancellation, resets, and PDF filenames/layout/source-data preservation.
+
+To verify without replacing a running development preview's `.next` output:
 
 ```bash
+FLOWPAY_DIST_DIR=.next-verify npm run build
 FLOWPAY_DIST_DIR=.next-verify npm start -- --port 3100
 ```
 
-Focused tests cover financial/status exclusions, Lagos date boundaries, query parsing and combined filters, sorting/pagination, exact money calculations, invoice validation, dataset integrity, persistence/recovery, unavailable storage, one-shot errors, cancellation, reset and preservation through empty/error responses. Browser verification exercises URL history, details keyboard behaviour, invoice creation/reload persistence, dashboard totals and mobile layouts.
+This override is for local verification only. **Do not configure `FLOWPAY_DIST_DIR` on Vercel**; production uses the normal Next.js `.next` output.
 
-The existing npm dependency tree reports five high-severity advisories in the ESLint tooling chain. npm's proposed automatic fix downgrades the Next.js ESLint configuration to v14; it has not been applied to this v16 application.
+The release was checked in Chromium against the local production build: direct routes and refreshes, automatic seeding, transaction filters, invoice creation/reload persistence, PDF downloads, desktop/mobile navigation and page overflow at 375, 768 and 1440 pixels. Screenshots above come from that build. These local checks do not establish that an unverified deployment works.
+
+## Deployment
+
+This is an ordinary Next.js project suitable for Vercel's Next.js preset with repository root `.` and Node.js **24.x**. Use `npm ci` for installation and `npm run build` for the build; retain the default output directory. No payment secrets, database provisioning or paid services are required.
+
+Connecting `Peter-Aderinto/flowpay` through Vercel's GitHub integration allows pushes to `main` to trigger production deployments once the integration is authorized. A public production URL and integration status should be confirmed after deployment; no unverified URL is listed here.
+
+## Limitations and dependency review
+
+This is a single-browser portfolio demo, not a production financial system. It has no authentication, multi-user synchronization, refunds, partial payments, tax, discounts or real invoice payment flow. Concurrent browser-tab writes are not database transactions. Browser download settings determine where PDFs are saved. Automated and Chromium checks do not replace broader assistive-technology and cross-browser testing.
+
+The 9 October 2026 audit reports **five high-severity affected package entries in one ESLint tooling chain**, stemming from a stack-exhaustion advisory in `braces`. The production-only audit reports zero vulnerabilities. No compatible patched dependency is available; npm's proposed Next ESLint v14 downgrade was not applied. Tooling/CI disruption from malicious nested glob patterns remains relevant. See the [dependency review](docs/dependency-review.md) for the exact path, exposure, reproduction commands and follow-up.
