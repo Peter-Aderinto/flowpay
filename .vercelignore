@@ -1,0 +1,19 @@
+# Local verification output, caches and personal configuration are not deployment inputs.
+.next-verify/
+.next/
+node_modules/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+*.log
+.env*
+.agents/
+.aws/
+.codex/
+*.pem
+*.key
+*.p12
+*.pfx
